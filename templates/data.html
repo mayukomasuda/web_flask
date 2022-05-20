@@ -13,25 +13,25 @@
     <h1>Result</h1>
     <p>Filename: {{filename}}</p>
 </div>
+{% for items in files %}
 <table class="table table-bordered table-sm">
     <thead>
       <tr>
-        <th scope="col" class="text-right">Iteration #</th>
         <th scope="col">Query ID</th>
         <th scope="col">Query Length</th>
         <th scope="col">Title</th>
-        <th scope="col">Hit Length</th>
+        <th scope="col">Hsp_evalue</th>
       </tr>
     </thead>
     <tbody>
         {% for item in items %}
         <tr>
-            <td class="text-right">{{item["iteration"]}}</td>
             <td>{{item["query_id"]}}</td>
             <td class="text-right">{{item["query_length"]}}</td>
-            <td>{{item["title"]}}</td>
-            <td class="text-right">{{item["length"]}}</td>
+            <td>{{item["sequence"]}}</td>
+            <td >{{item["evalue"]}}</td>
         </tr>
         {% endfor %}
     </tbody>
+  {% endfor %}
   </table>

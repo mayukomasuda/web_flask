@@ -19,27 +19,48 @@ def validate(filename):
         return any(fasta)  # Return True if this is fasta file format
 
 def parsefasta(filename):
-    xmlfilename = "results.xml"
+    i=0
+    xmlfiles=[]
     filepath = os.path.join("./",app.config['UPLOAD_PATH'], filename) 
     with open(filepath) as fh:
-        with open(xmlfilename, "w") as save_file:
              for seq_record in SimpleFastaParser(fh):
-                print(seq_record[1])
-                result_handle = NCBIWWW.qblast("blastn", "nt", sequence=seq_record[1], format_type="XML") 
-                save_file.write(result_handle.read())
-    return xmlfilename
+                i+=1
+                xmlfilename = "results_"+str(i)+".xml"
+                with open(xmlfilename, "w") as save_file:
+                    print(seq_record[1])
+                    result_handle = NCBIWWW.qblast("blastn", "nt", sequence=seq_record[1], format_type="XML") 
+                    save_file.write(result_handle.read())
+                xmlfiles.append(xmlfilename)
+    return xmlfiles
 
-def parsexml(filename):
+def parsexml(filenames):
+    files=[]
     items=[]
-    i = 0
-    for record in NCBIXML.parse(open(filename)):
-        i+=1
-        if record.alignments:
-            for align in record.alignments:
-                for hsp in align.hsps: 
-                    item=dict({"iteration":i,"query_id":record.query_id,"query_length":record.query_length,"title":align.title,"length":align.length })
-                    items.append(item)
-    return items
+    for filename in filenames:
+        i = 0
+        for record in NCBIXML.parse(open(filename)):
+            i=0
+            i+=1
+            if record.alignments:
+                for align in record.alignments:
+                    for hsp in align.hsps: 
+                        item=dict({"query_id":record.query_id,"query_length":record.query_length,"sequence":align.title,"evalue":hsp.expect })
+                        items.append(item)
+        files.append(items)
+    return files
+
+def parsexml_new(filenames):
+    files=[]
+    items=[]
+    for filename in filenames:
+        for record in NCBIXML.parse(open(filename)):
+            if record.alignments:
+                for align in record.alignments:
+                    for hsp in align.hsps: 
+                        item=dict({"query_id":record.query_id,"query_length":record.query_length,"sequence":align.title,"length":align.length })
+                        items.append(item)
+        files.append(items)
+    return files
 
 @app.route('/')
 def index():
@@ -64,11 +85,9 @@ def upload(filename):
 
 @app.route('/data/<filename>')
 def data(filename):
-    xmlfilename=parsefasta(filename)
-    print(xmlfilename)
-    #xmlfilename="./scripts/scriptxml_0.xml"  #For testing
-    items=parsexml(xmlfilename)
-    return render_template('data.html',items=items, filename=filename)
+    xmlfiles=parsefasta(filename)
+    files=parsexml(xmlfiles)
+    return render_template('data.html',files=files,filename=filename)
 
 if __name__ == '__main__':
    app.run(debug = True)
