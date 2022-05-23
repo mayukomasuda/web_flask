@@ -36,31 +36,17 @@ def parsefasta(filename):
 def parsexml(filenames):
     files=[]
     items=[]
+    i=0
     for filename in filenames:
-        i = 0
+        i+=1
         for record in NCBIXML.parse(open(filename)):
-            i=0
-            i+=1
             if record.alignments:
                 for align in record.alignments:
                     for hsp in align.hsps: 
                         item=dict({"query_id":record.query_id,"query_length":record.query_length,"sequence":align.title,"evalue":hsp.expect })
                         items.append(item)
         files.append(items)
-    return files
-
-def parsexml_new(filenames):
-    files=[]
-    items=[]
-    for filename in filenames:
-        for record in NCBIXML.parse(open(filename)):
-            if record.alignments:
-                for align in record.alignments:
-                    for hsp in align.hsps: 
-                        item=dict({"query_id":record.query_id,"query_length":record.query_length,"sequence":align.title,"length":align.length })
-                        items.append(item)
-        files.append(items)
-    return files
+    return i, files
 
 @app.route('/')
 def index():
@@ -86,8 +72,8 @@ def upload(filename):
 @app.route('/data/<filename>')
 def data(filename):
     xmlfiles=parsefasta(filename)
-    files=parsexml(xmlfiles)
-    return render_template('data.html',files=files,filename=filename)
+    i,files=parsexml(xmlfiles)
+    return render_template('data.html',files=files,filename=filename,i=i)
 
 if __name__ == '__main__':
    app.run(debug = True)

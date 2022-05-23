@@ -110,13 +110,12 @@ def parsexml_new2(filenames):
     #dictfile={}
     #
     for filename in filenames:
-        i = 0
         for record in NCBIXML.parse(open(filename)):
-            i=0
-            i+=1
+            i = 0
             #dictfile[record.query_id]={}
             if record.alignments:
                 for align in record.alignments:
+                    i+=1
                     for hsp in align.hsps: 
                         item=dict({"query_id":record.query_id,"query_length":record.query_length,"sequence":align.title,"evalue":hsp.expect })
                         items.append(item)
